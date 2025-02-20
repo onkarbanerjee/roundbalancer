@@ -11,8 +11,9 @@ import (
 )
 
 type Server struct {
-	id     string
-	logger *zap.Logger
+	id          string
+	logger      *zap.Logger
+	tempCounter int
 }
 
 func (s *Server) EchoHandler(w http.ResponseWriter, r *http.Request) {
@@ -85,5 +86,14 @@ func Start(cmd *cobra.Command, args []string) error {
 }
 
 func (s *Server) LivenessHandler(w http.ResponseWriter, r *http.Request) {
+	if s.id == "2" {
+		s.tempCounter++
+		if s.tempCounter > 5 && s.tempCounter < 20 {
+			fmt.Println("going down")
+			w.WriteHeader(http.StatusInternalServerError)
+
+			return
+		}
+	}
 	s.logger.Info("received liveness probe")
 }

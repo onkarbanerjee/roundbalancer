@@ -9,16 +9,12 @@ type Backend struct {
 	ID        string
 	URL       string
 	isHealthy bool
-	*httputil.ReverseProxy
-	mu *sync.RWMutex
-}
-
-func NewBackend(id string, url string, proxy *httputil.ReverseProxy) *Backend {
-	return &Backend{ID: id, URL: url, isHealthy: true, ReverseProxy: proxy, mu: &sync.RWMutex{}}
+	Service   *httputil.ReverseProxy
+	mu        *sync.RWMutex
 }
 
 func (b *Backend) IsHealthy() bool {
-	// get the read lock before reading it's health status value
+	// get the read lock before reading its health status value
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
@@ -33,25 +29,19 @@ func (b *Backend) UpdateHealthStatus(isHealthy bool) {
 	b.isHealthy = isHealthy
 }
 
-type Pool struct {
+type Pool interface {
+	GetHealthyBackends() []Backend
+	GetAllBackends() []Backend
+}
+type pool struct {
 	Backends []*Backend
-	sync.RWMutex
 }
 
-func NewPool(backends []*Backend) *Pool {
-	return &Pool{Backends: backends}
+func NewPool(backends []*Backend) Pool {
+	return &pool{Backends: backends}
 }
 
-func (p *Pool) Add(backend *Backend) {
-	p.Lock()
-	defer p.Unlock()
-	
-	p.Backends = append(p.Backends, backend)
-}
-func (p *Pool) GetHealthyBackends() []Backend {
-	p.RLock()
-	defer p.RUnlock()
-
+func (p *pool) GetHealthyBackends() []Backend {
 	var healthyBackends []Backend
 	for _, b := range p.Backends {
 		if !b.IsHealthy() {
@@ -61,4 +51,13 @@ func (p *Pool) GetHealthyBackends() []Backend {
 	}
 
 	return healthyBackends
+}
+
+func (p *pool) GetAllBackends() []Backend {
+	var allBackends []Backend
+	for _, b := range p.Backends {
+		allBackends = append(allBackends, *b)
+	}
+
+	return allBackends
 }

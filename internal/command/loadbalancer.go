@@ -1,7 +1,7 @@
 package command
 
 import (
-	"github.com/onkarbanerjee/roundbalancer/pkg/loadbalancer"
+	"github.com/onkarbanerjee/roundbalancer/pkg/dispatcher"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +13,7 @@ func configureLoadBalancingServerCommand(command *cobra.Command) {
 	serverStartCommand := &cobra.Command{
 		Use:   "start",
 		Short: "start server",
-		RunE:  loadbalancer.Start,
+		RunE:  dispatcher.Start,
 	}
 	command.AddCommand(loadbalancerCommand)
 	loadbalancerCommand.AddCommand(serverStartCommand)
