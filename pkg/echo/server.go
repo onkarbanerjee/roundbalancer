@@ -15,7 +15,7 @@ type Server struct {
 	logger *zap.Logger
 }
 
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (s *Server) EchoHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
 		s.logger.Error("Invalid method used", zap.String("method", r.Method))
@@ -76,9 +76,14 @@ func Start(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get port flag: %w", err)
 	}
 	echoServer := NewServer(id, logger)
-	http.HandleFunc("/echo", echoServer.ServeHTTP)
+	http.HandleFunc("/echo", echoServer.EchoHandler)
+	http.HandleFunc("/livez", echoServer.LivenessHandler)
 
 	fmt.Printf("running application server id %s on port %d\n", id, port)
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+}
+
+func (s *Server) LivenessHandler(w http.ResponseWriter, r *http.Request) {
+	s.logger.Info("received liveness probe")
 }

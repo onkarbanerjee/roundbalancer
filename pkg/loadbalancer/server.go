@@ -52,7 +52,7 @@ func Start(cmd *cobra.Command, args []string) error {
 		logger:        logger,
 	}
 
-	//go l.healthUpdater.Start()
+	go l.healthUpdater.Start()
 
 	http.HandleFunc("/echo", l.ServeHTTP)
 

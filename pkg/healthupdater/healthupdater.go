@@ -1,13 +1,15 @@
 package healthupdater
 
 import (
-	"github.com/onkarbanerjee/roundbalancer/pkg/backend"
+	"fmt"
+	"net/http"
 	"time"
+
+	"github.com/onkarbanerjee/roundbalancer/pkg/backend"
 )
 
 type HealthUpdater struct {
-	pool        *backend.Pool
-	checkHealth func(url string) bool
+	pool *backend.Pool
 }
 
 func New(pool *backend.Pool) *HealthUpdater {
@@ -15,11 +17,14 @@ func New(pool *backend.Pool) *HealthUpdater {
 }
 
 func (h *HealthUpdater) Start() {
-	t := time.NewTicker(1 * time.Second)
+	t := time.NewTicker(2 * time.Second)
 
-	for range t.C {
+	for {
+		<-t.C
 		for _, each := range h.pool.Backends {
-			each.UpdateHealthStatus(h.checkHealth(each.URL))
+			get, err := http.Get(fmt.Sprintf("%s/livez", each.URL))
+			each.UpdateHealthStatus(err != nil || get.StatusCode != http.StatusOK)
 		}
+
 	}
 }
