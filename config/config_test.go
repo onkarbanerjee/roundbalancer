@@ -49,18 +49,18 @@ func TestLoad(t *testing.T) {
 		}
 
 		if cfg.Backends[0].ID != "backend1" {
-			t.Errorf("Expected first backend ID to be 'backend1', got %q", cfg.Backends[0].ID)
+			t.Errorf("Expected first backends ID to be 'backend1', got %q", cfg.Backends[0].ID)
 		}
 
 		if cfg.Backends[0].Port != 8080 {
-			t.Errorf("Expected first backend port to be 8080, got %d", cfg.Backends[0].Port)
+			t.Errorf("Expected first backends port to be 8080, got %d", cfg.Backends[0].Port)
 		}
 		if cfg.Backends[1].ID != "backend2" {
-			t.Errorf("Expected first backend ID to be 'backend1', got %q", cfg.Backends[0].ID)
+			t.Errorf("Expected first backends ID to be 'backend1', got %q", cfg.Backends[0].ID)
 		}
 
 		if cfg.Backends[1].Port != 8081 {
-			t.Errorf("Expected first backend port to be 8080, got %d", cfg.Backends[0].Port)
+			t.Errorf("Expected first backends port to be 8080, got %d", cfg.Backends[0].Port)
 		}
 	})
 }

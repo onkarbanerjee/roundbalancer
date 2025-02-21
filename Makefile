@@ -4,6 +4,7 @@ start-application-server:
 	go run cmd/cli/main.go application-server start --port $(PORT) --id $(ID)
 
 mocks:
-	go run go.uber.org/mock/mockgen -destination=./mocks/mock_pool.go -package=mocks -typed github.com/onkarbanerjee/roundbalancer/pkg/backend Pool
+	rm -rf mocks
+	go run go.uber.org/mock/mockgen -destination=./mocks/mock_pool.go -package=mocks -typed github.com/onkarbanerjee/roundbalancer/pkg/backends GroupOfBackends
 
 .PHONY: mocks

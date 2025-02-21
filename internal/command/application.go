@@ -8,7 +8,7 @@ import (
 func configureApplicationServerCommand(command *cobra.Command) {
 	applicationServerCommand := &cobra.Command{
 		Use:   "application-server",
-		Short: "backend application server",
+		Short: "backends application server",
 	}
 	serverStartCommand := &cobra.Command{
 		Use:   "start",

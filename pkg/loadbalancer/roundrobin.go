@@ -1,34 +1,29 @@
 package loadbalancer
 
 import (
-	"errors"
-	"log"
 	"sync/atomic"
 
-	"github.com/onkarbanerjee/roundbalancer/pkg/backend"
+	"github.com/onkarbanerjee/roundbalancer/pkg/backends"
 )
 
 type LoadBalancer interface {
-	Next() (*backend.Backend, error)
+	Next() (*backends.Backend, error)
 }
 type RoundRobin struct {
-	pool    backend.Pool
+	pool    backends.GroupOfBackends
 	current int32
 }
 
-func NewRoundRobin(pool backend.Pool) *RoundRobin {
+func NewRoundRobin(pool backends.GroupOfBackends) *RoundRobin {
 	return &RoundRobin{pool: pool, current: -1}
 }
 
-func (r *RoundRobin) Next() (*backend.Backend, error) {
-	healthyBackends := r.pool.GetHealthyBackends()
-	if len(healthyBackends) == 0 {
-		log.Println("No healthy backends")
-
-		return nil, errors.New("no healthy backends")
+func (r *RoundRobin) Next() (*backends.Backend, error) {
+	next := (r.current + 1) % int32(r.pool.GetCount())
+	j, nextBackEnd, err := r.pool.GetHealthyBackendAt(int(next))
+	if err != nil {
+		return nil, err
 	}
-	next := (r.current + 1) % int32(len(healthyBackends))
-	atomic.StoreInt32(&r.current, next)
-
-	return &healthyBackends[next], nil
+	atomic.StoreInt32(&r.current, int32(j))
+	return nextBackEnd, nil
 }

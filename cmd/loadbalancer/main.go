@@ -6,10 +6,11 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"path"
+	"time"
 
 	"github.com/onkarbanerjee/roundbalancer/config"
 	"github.com/onkarbanerjee/roundbalancer/internal/loadbalancer"
-	"github.com/onkarbanerjee/roundbalancer/pkg/backend"
+	"github.com/onkarbanerjee/roundbalancer/pkg/backends"
 	"go.uber.org/zap"
 )
 
@@ -21,14 +22,14 @@ func main() {
 		return
 	}
 
-	cfg, err := config.Load(path.Join("config", "values", "config.json"))
+	cfg, err := config.Load(path.Join("config", "values", "proxies_config.json"))
 	if err != nil {
-		logger.Error(fmt.Sprintf("could not load config.json, got error: %s", err.Error()))
+		logger.Error(fmt.Sprintf("could not load proxies_config.json, got error: %s", err.Error()))
 
 		return
 	}
 
-	var backends []*backend.Backend
+	var bw []*backends.Backend
 	for _, backendConfig := range cfg.Backends {
 		endpoint := fmt.Sprintf("http://localhost:%d", backendConfig.Port)
 		parse, err := url.Parse(endpoint)
@@ -37,11 +38,12 @@ func main() {
 
 			return
 		}
-		logger.Info(fmt.Sprintf("backend url: %s", parse.String()))
-		backends = append(backends, &backend.Backend{ID: backendConfig.ID, URL: endpoint, Service: httputil.NewSingleHostReverseProxy(parse)})
+		logger.Info(fmt.Sprintf("backends url: %s", parse.String()))
+		bw = append(bw, backends.NewBackend(
+			backendConfig.ID, httputil.NewSingleHostReverseProxy(parse), parse))
 	}
 
-	if err := loadbalancer.Start(backends, logger); err != nil {
+	if err := loadbalancer.Start(bw, logger, 2*time.Second, 9090); err != nil {
 		logger.Fatal(fmt.Sprintf("could not start server, got error: %s", err.Error()))
 	}
 }
