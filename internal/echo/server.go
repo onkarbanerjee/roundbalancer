@@ -2,7 +2,6 @@ package echo
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -40,7 +39,6 @@ func (s *Server) Echo(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	fmt.Println(v)
 	w.Header().Set("Content-Type", "echo/json")
 	err = json.NewEncoder(w).Encode(v)
 	if err != nil {

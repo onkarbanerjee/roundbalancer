@@ -3,7 +3,6 @@ package loadbalancer_test
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httputil"
@@ -20,9 +19,8 @@ import (
 var servers []*http.Server
 
 func TestStart(t *testing.T) {
-	t.Run("run", func(t *testing.T) {
-
-		setUpServers()
+	t.Run("server should be able to dispatch request in round robin manner to only health backends", func(t *testing.T) {
+		setUpServers(t)
 
 		backend1URL, err := url.Parse("http://localhost:8080/livez")
 		assert.NoError(t, err)
@@ -69,9 +67,7 @@ func TestStart(t *testing.T) {
 
 		time.Sleep(10 * time.Second)
 
-		//client := &http.Client{
-		//	Transport: &http.Transport{},
-		//}
+		// all 3 servers in rotation
 		post, err := http.Post("http://localhost:9090/echo", "application/json", nil)
 		assert.NoError(t, err)
 		assert.Equal(t, 200, post.StatusCode)
@@ -97,6 +93,7 @@ func TestStart(t *testing.T) {
 
 		time.Sleep(10 * time.Second)
 
+		// server 2 out of rotation
 		post, err = http.Post("http://localhost:9090/echo", "application/json", bytes.NewBuffer([]byte("hello world")))
 		assert.NoError(t, err)
 		assert.Equal(t, 200, post.StatusCode)
@@ -138,6 +135,7 @@ func TestStart(t *testing.T) {
 
 		time.Sleep(10 * time.Second)
 
+		// server 2 rejoins the rotation
 		post, err = http.Post("http://localhost:9090/echo", "application/json", bytes.NewBuffer([]byte("hello world")))
 		assert.NoError(t, err)
 		assert.Equal(t, 200, post.StatusCode)
@@ -165,11 +163,10 @@ func TestStart(t *testing.T) {
 		all, err = io.ReadAll(post.Body)
 		assert.NoError(t, err)
 		assert.Equal(t, "I am from server 1", string(all))
-
 	})
 }
 
-func setUpServers() {
+func setUpServers(t *testing.T) {
 	mux1 := http.NewServeMux()
 	mux1.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("I am from server 1")) })
 	mux1.HandleFunc("/livez", func(w http.ResponseWriter, r *http.Request) {})
@@ -199,7 +196,7 @@ func setUpServers() {
 		go func() {
 			err := server.ListenAndServe()
 			if err != nil {
-				fmt.Println(err.Error())
+				t.Log(err.Error())
 			}
 		}()
 	}

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -17,7 +18,7 @@ import (
 )
 
 func main() {
-	port := flag.Int("port", 0, "port")
+	port := flag.Int("port", 0, "port on which loadbalancer will serve")
 	timeout := flag.Int("timeout", 0, "timeout in seconds")
 	flag.Parse()
 	if *port == 0 {
@@ -58,10 +59,21 @@ func main() {
 			return
 		}
 
-		http.DefaultClient.Timeout = time.Duration(*timeout) * time.Second
+		reversProxy := httputil.NewSingleHostReverseProxy(parsedBaseURL)
+		reversProxy.Transport = &http.Transport{
+			ResponseHeaderTimeout: time.Duration(*timeout) * time.Second,
+		}
+		reversProxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, e error) {
+			if err, ok := err.(net.Error); ok && err.Timeout() {
+				http.Error(w, "Gateway Timeout", http.StatusGatewayTimeout)
+
+				return
+			}
+			http.Error(w, "Network issues", http.StatusBadGateway)
+		}
 		backendServers = append(backendServers, backends.NewBackend(
 			cfg.ID,
-			httputil.NewSingleHostReverseProxy(parsedBaseURL),
+			reversProxy,
 			parsedLivezURL))
 	}
 

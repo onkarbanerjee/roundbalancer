@@ -11,16 +11,16 @@ type LoadBalancer interface {
 	Next() (*backends.Backend, error)
 }
 type RoundRobin struct {
-	pool    backends.GroupOfBackends
-	current int32
+	backendGroup backends.GroupOfBackends
+	current      int32
 }
 
-func NewRoundRobin(pool backends.GroupOfBackends) *RoundRobin {
-	return &RoundRobin{pool: pool, current: -1}
+func NewRoundRobin(backendGroup backends.GroupOfBackends) *RoundRobin {
+	return &RoundRobin{backendGroup: backendGroup, current: -1}
 }
 
 func (r *RoundRobin) Next() (*backends.Backend, error) {
-	allBackends := r.pool.GetAllBackends()
+	allBackends := r.backendGroup.GetAllBackends()
 	total := int32(len(allBackends))
 	next := (r.current + 1) % total
 	var found bool

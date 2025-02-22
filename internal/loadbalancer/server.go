@@ -20,7 +20,7 @@ func Start(backendServers []*backends.Backend, logger *zap.Logger, livenessCheck
 		livenesschecker.New(backendGroup),
 		livenessCheckInterval,
 		logger)
-	logger.Info("created a dispatcher with configured backends that will check for their liveness at configured intervals",
+	logger.Info("created a dispatcher with configured backends that will check for their liveness at regular intervals",
 		zap.Any("backends", backendGroup),
 		zap.Duration("liveness_check_interval", livenessCheckInterval))
 

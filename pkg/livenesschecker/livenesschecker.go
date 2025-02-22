@@ -11,17 +11,20 @@ type LivenessChecker interface {
 }
 
 type livenessChecker struct {
-	pool backends.GroupOfBackends
+	backendGroup backends.GroupOfBackends
 }
 
 func (l *livenessChecker) CheckLiveness() {
-	allBackends := l.pool.GetAllBackends()
+	allBackends := l.backendGroup.GetAllBackends()
 	for _, each := range allBackends {
 		resp, err := http.Get(each.LivenessURL.String())
-		each.UpdateHealthStatus(err == nil && resp.StatusCode == http.StatusOK)
+		latestHealthStatus := err == nil && resp.StatusCode == http.StatusOK
+		if latestHealthStatus != each.IsHealthy() {
+			each.UpdateHealthStatus(latestHealthStatus)
+		}
 	}
 }
 
-func New(pool backends.GroupOfBackends) LivenessChecker {
-	return &livenessChecker{pool: pool}
+func New(backendGroup backends.GroupOfBackends) LivenessChecker {
+	return &livenessChecker{backendGroup: backendGroup}
 }

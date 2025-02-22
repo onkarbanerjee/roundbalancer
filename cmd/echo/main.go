@@ -19,7 +19,7 @@ func main() {
 	}
 
 	id := flag.String("id", "", "server id")
-	port := flag.Int("port", 0, "port")
+	port := flag.Int("port", 0, "port on which echo server will serve")
 	flag.Parse()
 	if *id == "" || *port == 0 {
 		logger.Error("id or port is required")

@@ -1,7 +1,6 @@
 package backends
 
 import (
-	"fmt"
 	"net/http/httputil"
 	"net/url"
 	"sync"
@@ -36,7 +35,7 @@ func (b *Backend) UpdateHealthStatus(isHealthy bool) {
 	// lock it before updating the value
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	fmt.Println("seting health status", isHealthy, b.ID)
+	
 	b.isHealthy = isHealthy
 }
 

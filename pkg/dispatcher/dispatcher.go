@@ -38,7 +38,7 @@ func (r *Dispatcher) ServeHTTP(writer http.ResponseWriter, request *http.Request
 
 		return
 	}
-	r.logger.Info(fmt.Sprintf("dispatching to backends ID: %s", backendServer.ID))
+	r.logger.Info(fmt.Sprintf("dispatching to backend ID: %s", backendServer.ID))
 	backendServer.Service.ServeHTTP(writer, request)
 }
 
