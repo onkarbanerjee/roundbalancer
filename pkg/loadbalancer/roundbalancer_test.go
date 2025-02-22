@@ -1,7 +1,6 @@
 package loadbalancer_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/onkarbanerjee/roundbalancer/mocks"
@@ -16,8 +15,12 @@ func TestRoundRobin_Next(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mockPool := mocks.NewMockGroupOfBackends(ctrl)
-		mockPool.EXPECT().GetCount().Return(3)
-		mockPool.EXPECT().GetHealthyBackendAt(0).Return(nil, errors.New("no healthy backends"))
+		b1 := backends.NewBackend("1", nil, nil)
+		b2 := backends.NewBackend("2", nil, nil)
+		b3 := backends.NewBackend("3", nil, nil)
+		mockBackends := []*backends.Backend{b1, b2, b3}
+		mockPool.EXPECT().GetAllBackends().Return(mockBackends)
+
 		r := loadbalancer.NewRoundRobin(mockPool)
 		b, err := r.Next()
 		assert.ErrorContains(t, err, "no healthy backends")
@@ -29,45 +32,36 @@ func TestRoundRobin_Next(t *testing.T) {
 		mockPool := mocks.NewMockGroupOfBackends(ctrl)
 		r := loadbalancer.NewRoundRobin(mockPool)
 
-		mockPool.EXPECT().GetCount().Return(3).AnyTimes()
-		mockPool.EXPECT().GetHealthyBackendAt(0).Return(&backends.Backend{
-			ID: "1",
-		}, nil)
+		b1 := backends.NewBackend("1", nil, nil)
+		b2 := backends.NewBackend("2", nil, nil)
+		b3 := backends.NewBackend("3", nil, nil)
+		mockBackends := []*backends.Backend{b1, b2, b3}
+		b1.UpdateHealthStatus(true)
+		b2.UpdateHealthStatus(true)
+		b3.UpdateHealthStatus(true)
+		mockPool.EXPECT().GetAllBackends().Return(mockBackends).AnyTimes()
+
 		b, err := r.Next()
 		assert.NoError(t, err)
 		assert.Equal(t, "1", b.ID)
 
-		mockPool.EXPECT().GetHealthyBackendAt(1).Return(&backends.Backend{
-			ID: "2",
-		}, nil)
 		b, err = r.Next()
 		assert.NoError(t, err)
 		assert.Equal(t, "2", b.ID)
 
-		mockPool.EXPECT().GetHealthyBackendAt(2).Return(&backends.Backend{
-			ID: "3",
-		}, nil)
 		b, err = r.Next()
 		assert.NoError(t, err)
 		assert.Equal(t, "3", b.ID)
 
-		mockPool.EXPECT().GetHealthyBackendAt(0).Return(&backends.Backend{
-			ID: "1",
-		}, nil)
 		b, err = r.Next()
 		assert.NoError(t, err)
 		assert.Equal(t, "1", b.ID)
 
-		mockPool.EXPECT().GetHealthyBackendAt(1).Return(&backends.Backend{
-			ID: "3",
-		}, nil)
+		b2.UpdateHealthStatus(false)
 		b, err = r.Next()
 		assert.NoError(t, err)
 		assert.Equal(t, "3", b.ID)
 
-		mockPool.EXPECT().GetHealthyBackendAt(2).Return(&backends.Backend{
-			ID: "1",
-		}, nil)
 		b, err = r.Next()
 		assert.NoError(t, err)
 		assert.Equal(t, "1", b.ID)

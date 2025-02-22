@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"path"
@@ -15,6 +17,15 @@ import (
 )
 
 func main() {
+	port := flag.Int("port", 0, "port")
+	timeout := flag.Int("timeout", 0, "timeout in seconds")
+	flag.Parse()
+	if *port == 0 {
+		log.Println("port is required")
+
+		return
+	}
+
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Printf("could not create logger, got error: %s", err.Error())
@@ -29,21 +40,32 @@ func main() {
 		return
 	}
 
-	var bw []*backends.Backend
-	for _, backendConfig := range cfg.Backends {
-		endpoint := fmt.Sprintf("http://localhost:%d", backendConfig.Port)
-		parse, err := url.Parse(endpoint)
+	var backendServers []*backends.Backend
+	for _, cfg := range cfg.Backends {
+		baseURL := fmt.Sprintf("http://localhost:%d", cfg.Port)
+		parsedBaseURL, err := url.Parse(baseURL)
 		if err != nil {
-			logger.Error(fmt.Sprintf("could not parse url %s, got error: %s", endpoint, err.Error()))
+			logger.Error(fmt.Sprintf("could not parse url %s, got error: %s", baseURL, err.Error()))
 
 			return
 		}
-		logger.Info(fmt.Sprintf("backends url: %s", parse.String()))
-		bw = append(bw, backends.NewBackend(
-			backendConfig.ID, httputil.NewSingleHostReverseProxy(parse), parse))
+
+		liveZEndpoint := fmt.Sprintf("%s/livez", baseURL)
+		parsedLivezURL, err := url.Parse(liveZEndpoint)
+		if err != nil {
+			logger.Error(fmt.Sprintf("could not parse url %s, got error: %s", liveZEndpoint, err.Error()))
+
+			return
+		}
+
+		http.DefaultClient.Timeout = time.Duration(*timeout) * time.Second
+		backendServers = append(backendServers, backends.NewBackend(
+			cfg.ID,
+			httputil.NewSingleHostReverseProxy(parsedBaseURL),
+			parsedLivezURL))
 	}
 
-	if err := loadbalancer.Start(bw, logger, 2*time.Second, 9090); err != nil {
+	if err := loadbalancer.Start(backendServers, logger, 2*time.Second, *port); err != nil {
 		logger.Fatal(fmt.Sprintf("could not start server, got error: %s", err.Error()))
 	}
 }

@@ -41,10 +41,10 @@ func (m *MockGroupOfBackends) EXPECT() *MockGroupOfBackendsMockRecorder {
 }
 
 // GetAllBackends mocks base method.
-func (m *MockGroupOfBackends) GetAllBackends() []backends.Backend {
+func (m *MockGroupOfBackends) GetAllBackends() []*backends.Backend {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllBackends")
-	ret0, _ := ret[0].([]backends.Backend)
+	ret0, _ := ret[0].([]*backends.Backend)
 	return ret0
 }
 
@@ -61,96 +61,19 @@ type MockGroupOfBackendsGetAllBackendsCall struct {
 }
 
 // Return rewrite *gomock.Call.Return
-func (c *MockGroupOfBackendsGetAllBackendsCall) Return(arg0 []backends.Backend) *MockGroupOfBackendsGetAllBackendsCall {
+func (c *MockGroupOfBackendsGetAllBackendsCall) Return(arg0 []*backends.Backend) *MockGroupOfBackendsGetAllBackendsCall {
 	c.Call = c.Call.Return(arg0)
 	return c
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MockGroupOfBackendsGetAllBackendsCall) Do(f func() []backends.Backend) *MockGroupOfBackendsGetAllBackendsCall {
+func (c *MockGroupOfBackendsGetAllBackendsCall) Do(f func() []*backends.Backend) *MockGroupOfBackendsGetAllBackendsCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockGroupOfBackendsGetAllBackendsCall) DoAndReturn(f func() []backends.Backend) *MockGroupOfBackendsGetAllBackendsCall {
-	c.Call = c.Call.DoAndReturn(f)
-	return c
-}
-
-// GetCount mocks base method.
-func (m *MockGroupOfBackends) GetCount() int {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCount")
-	ret0, _ := ret[0].(int)
-	return ret0
-}
-
-// GetCount indicates an expected call of GetCount.
-func (mr *MockGroupOfBackendsMockRecorder) GetCount() *MockGroupOfBackendsGetCountCall {
-	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCount", reflect.TypeOf((*MockGroupOfBackends)(nil).GetCount))
-	return &MockGroupOfBackendsGetCountCall{Call: call}
-}
-
-// MockGroupOfBackendsGetCountCall wrap *gomock.Call
-type MockGroupOfBackendsGetCountCall struct {
-	*gomock.Call
-}
-
-// Return rewrite *gomock.Call.Return
-func (c *MockGroupOfBackendsGetCountCall) Return(arg0 int) *MockGroupOfBackendsGetCountCall {
-	c.Call = c.Call.Return(arg0)
-	return c
-}
-
-// Do rewrite *gomock.Call.Do
-func (c *MockGroupOfBackendsGetCountCall) Do(f func() int) *MockGroupOfBackendsGetCountCall {
-	c.Call = c.Call.Do(f)
-	return c
-}
-
-// DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockGroupOfBackendsGetCountCall) DoAndReturn(f func() int) *MockGroupOfBackendsGetCountCall {
-	c.Call = c.Call.DoAndReturn(f)
-	return c
-}
-
-// GetHealthyBackendAt mocks base method.
-func (m *MockGroupOfBackends) GetHealthyBackendAt(next int) (*backends.Backend, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHealthyBackendAt", next)
-	ret0, _ := ret[0].(*backends.Backend)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetHealthyBackendAt indicates an expected call of GetHealthyBackendAt.
-func (mr *MockGroupOfBackendsMockRecorder) GetHealthyBackendAt(next any) *MockGroupOfBackendsGetHealthyBackendAtCall {
-	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHealthyBackendAt", reflect.TypeOf((*MockGroupOfBackends)(nil).GetHealthyBackendAt), next)
-	return &MockGroupOfBackendsGetHealthyBackendAtCall{Call: call}
-}
-
-// MockGroupOfBackendsGetHealthyBackendAtCall wrap *gomock.Call
-type MockGroupOfBackendsGetHealthyBackendAtCall struct {
-	*gomock.Call
-}
-
-// Return rewrite *gomock.Call.Return
-func (c *MockGroupOfBackendsGetHealthyBackendAtCall) Return(arg0 *backends.Backend, arg1 error) *MockGroupOfBackendsGetHealthyBackendAtCall {
-	c.Call = c.Call.Return(arg0, arg1)
-	return c
-}
-
-// Do rewrite *gomock.Call.Do
-func (c *MockGroupOfBackendsGetHealthyBackendAtCall) Do(f func(int) (*backends.Backend, error)) *MockGroupOfBackendsGetHealthyBackendAtCall {
-	c.Call = c.Call.Do(f)
-	return c
-}
-
-// DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MockGroupOfBackendsGetHealthyBackendAtCall) DoAndReturn(f func(int) (*backends.Backend, error)) *MockGroupOfBackendsGetHealthyBackendAtCall {
+func (c *MockGroupOfBackendsGetAllBackendsCall) DoAndReturn(f func() []*backends.Backend) *MockGroupOfBackendsGetAllBackendsCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }

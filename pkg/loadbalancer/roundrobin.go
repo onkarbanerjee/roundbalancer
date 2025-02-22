@@ -1,6 +1,7 @@
 package loadbalancer
 
 import (
+	"errors"
 	"sync/atomic"
 
 	"github.com/onkarbanerjee/roundbalancer/pkg/backends"
@@ -19,11 +20,23 @@ func NewRoundRobin(pool backends.GroupOfBackends) *RoundRobin {
 }
 
 func (r *RoundRobin) Next() (*backends.Backend, error) {
-	next := (r.current + 1) % int32(r.pool.GetCount())
-	j, nextBackEnd, err := r.pool.GetHealthyBackendAt(int(next))
-	if err != nil {
-		return nil, err
+	allBackends := r.pool.GetAllBackends()
+	total := int32(len(allBackends))
+	next := (r.current + 1) % total
+	var found bool
+	for i := next; i < next+total; i++ {
+		j := i % total
+		if allBackends[j].IsHealthy() {
+			next = j
+			found = true
+
+			break
+		}
 	}
-	atomic.StoreInt32(&r.current, int32(j))
-	return nextBackEnd, nil
+	if !found {
+		return nil, errors.New("no healthy backends")
+	}
+	nextBackend := allBackends[next]
+	atomic.StoreInt32(&r.current, next)
+	return nextBackend, nil
 }

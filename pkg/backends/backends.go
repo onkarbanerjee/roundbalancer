@@ -1,7 +1,6 @@
 package backends
 
 import (
-	"errors"
 	"fmt"
 	"net/http/httputil"
 	"net/url"
@@ -42,29 +41,11 @@ func (b *Backend) UpdateHealthStatus(isHealthy bool) {
 }
 
 type GroupOfBackends interface {
-	GetCount() int
 	GetAllBackends() []*Backend
-	GetHealthyBackendAt(next int) (int, *Backend, error)
 }
 
 type group struct {
 	group []*Backend
-}
-
-func (g *group) GetCount() int {
-	return len(g.group)
-}
-
-func (g *group) GetHealthyBackendAt(next int) (int, *Backend, error) {
-	fmt.Println(next)
-	for i := next; i < next+len(g.group); i++ {
-		j := i % len(g.group)
-		if g.group[j].IsHealthy() {
-			return j, g.group[j], nil
-		}
-	}
-
-	return 0, nil, errors.New("no backends available")
 }
 
 func (g *group) GetAllBackends() []*Backend {

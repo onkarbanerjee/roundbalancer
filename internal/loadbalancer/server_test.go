@@ -204,9 +204,3 @@ func setUpServers() {
 		}()
 	}
 }
-
-func startServers() {
-	for _, server := range servers {
-		go server.ListenAndServe()
-	}
-}

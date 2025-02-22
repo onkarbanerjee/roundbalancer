@@ -25,17 +25,21 @@ func New(loadBalancer loadbalancer.LoadBalancer, checker livenesschecker.Livenes
 		logger:                logger}
 }
 func (r *Dispatcher) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		r.logger.Error("method not allowed", zap.String("method", request.Method))
+		http.Error(writer, "method not allowed", http.StatusMethodNotAllowed)
+
+		return
+	}
 	backendServer, err := r.loadBalancer.Next()
 	if err != nil || backendServer == nil {
 		r.logger.Error("could not get next backends to route this request to", zap.Error(err))
-		writer.WriteHeader(http.StatusServiceUnavailable)
-		writer.Write([]byte("failed to route this request"))
+		http.Error(writer, "failed to route this request", http.StatusInternalServerError)
 
 		return
 	}
 	r.logger.Info(fmt.Sprintf("dispatching to backends ID: %s", backendServer.ID))
-	fmt.Println("request is", request.URL.String())
-	(backendServer.Service).ServeHTTP(writer, request)
+	backendServer.Service.ServeHTTP(writer, request)
 }
 
 func (r *Dispatcher) StartCheckingLiveness() {
@@ -43,7 +47,6 @@ func (r *Dispatcher) StartCheckingLiveness() {
 	defer t.Stop()
 
 	for range t.C {
-		fmt.Println("checking liveness")
 		r.livenessChecker.CheckLiveness()
 	}
 }
