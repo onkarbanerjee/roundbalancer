@@ -11,7 +11,9 @@ import (
 )
 
 func main() {
-	logger, err := zap.NewProduction()
+	zapConfig := zap.NewProductionConfig()
+	zapConfig.EncoderConfig.StacktraceKey = ""
+	logger, err := zapConfig.Build()
 	if err != nil {
 		log.Printf("could not create logger, got error: %s", err.Error())
 
