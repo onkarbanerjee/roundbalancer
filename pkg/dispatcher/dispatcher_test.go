@@ -51,7 +51,7 @@ func TestDispatcher_ServeHTTP(t *testing.T) {
 		d := dispatcher.New(mockLB, nil, time.Duration(0), zap.NewExample())
 
 		backendServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(`Backend Response`))
+			w.Write([]byte(`Backend Response`)) //nolint:errcheck
 		}))
 		defer backendServer.Close()
 
