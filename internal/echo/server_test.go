@@ -33,12 +33,12 @@ func TestServer_Echo(t *testing.T) {
 			GamerID string `json:"gamer_id"`
 			Points  int    `json:"points"`
 		}
-		body := MockJSON{
+		expectedBody := MockJSON{
 			Game:    "Mobile Legends",
 			GamerID: "GYUTDTE",
 			Points:  20,
 		}
-		b, err := json.Marshal(body)
+		b, err := json.Marshal(expectedBody)
 		assert.NoError(t, err)
 		r := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(b))
 		w := httptest.NewRecorder()
@@ -47,6 +47,6 @@ func TestServer_Echo(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 		var result MockJSON
 		assert.NoError(t, json.NewDecoder(w.Body).Decode(&result))
-		assert.Equal(t, body, result)
+		assert.Equal(t, expectedBody, result)
 	})
 }

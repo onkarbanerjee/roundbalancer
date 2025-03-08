@@ -39,7 +39,7 @@ func (s *Server) Echo(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	w.Header().Set("Content-Type", "echo/json")
+	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(v)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

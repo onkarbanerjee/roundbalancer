@@ -32,7 +32,7 @@ func TestDispatcher_ServeHTTP(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, rec.Code)
 		assert.Contains(t, rec.Body.String(), "failed to route this request")
 	})
-	t.Run("error - could not get a backend from loadbalancer to send request to it", func(t *testing.T) {
+	t.Run("error - could not get a backend from loadbalancer to send request to it, method not allowed", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		mockLB := mocks.NewMockLoadBalancer(ctrl)
 

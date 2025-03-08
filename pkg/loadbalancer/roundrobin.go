@@ -22,7 +22,7 @@ func NewRoundRobin(backendGroup backends.GroupOfBackends) *RoundRobin {
 func (r *RoundRobin) Next() (*backends.Backend, error) {
 	allBackends := r.backendGroup.GetAllBackends()
 	total := int32(len(allBackends))
-	next := (r.current + 1) % total
+	next := (atomic.LoadInt32(&r.current) + 1) % total
 	var found bool
 	for i := next; i < next+total; i++ {
 		j := i % total
