@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/onkarbanerjee/roundbalancer/pkg/backends"
 	"github.com/onkarbanerjee/roundbalancer/pkg/dispatcher"
 	"github.com/onkarbanerjee/roundbalancer/pkg/livenesschecker"
@@ -15,7 +17,7 @@ import (
 func Start(backendServers []*backends.Backend, logger *zap.Logger, livenessCheckInterval time.Duration, port int) error {
 	backendGroup := backends.NewGroup(backendServers)
 
-	d := dispatcher.New(
+	dispatcherInstance := dispatcher.New(
 		loadbalancer.NewRoundRobin(backendGroup),
 		livenesschecker.New(backendGroup),
 		livenessCheckInterval,
@@ -24,10 +26,11 @@ func Start(backendServers []*backends.Backend, logger *zap.Logger, livenessCheck
 		zap.Any("backends", backendGroup),
 		zap.Duration("liveness_check_interval", livenessCheckInterval))
 
-	go d.StartCheckingLiveness()
+	go dispatcherInstance.StartCheckingLiveness()
 
-	http.HandleFunc("/echo", d.ServeHTTP)
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/echo", dispatcherInstance)
 	logger.Info("load balancer is starting", zap.Int("port", port))
-
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), mux)
 }

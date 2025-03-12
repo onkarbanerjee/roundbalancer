@@ -21,6 +21,7 @@ var servers []*http.Server
 func TestStart(t *testing.T) {
 	t.Run("server should be able to dispatch request in round robin manner to only health backends", func(t *testing.T) {
 		setUpServers(t)
+		defer closeServers()
 
 		backend1URL, err := url.Parse("http://localhost:8080/livez")
 		assert.NoError(t, err)
@@ -167,6 +168,7 @@ func TestStart(t *testing.T) {
 
 	t.Run("server should be able to dispatch request even when backends keep going down and up at the same time", func(t *testing.T) {
 		setUpServers(t)
+		defer closeServers()
 
 		backend1URL, err := url.Parse("http://localhost:8080/livez")
 		assert.NoError(t, err)
@@ -208,7 +210,7 @@ func TestStart(t *testing.T) {
 					backend3},
 				logger,
 				time.Second,
-				9090))
+				9091))
 		}()
 
 		time.Sleep(10 * time.Second)
@@ -216,7 +218,7 @@ func TestStart(t *testing.T) {
 		for range 100 {
 			time.Sleep(time.Millisecond)
 			go func() {
-				post, err := http.Post("http://localhost:9090/echo", "application/json", nil)
+				post, err := http.Post("http://localhost:9091/echo", "application/json", nil)
 				assert.NoError(t, err)
 				assert.Contains(t, []int{http.StatusOK, http.StatusBadGateway}, post.StatusCode)
 				all, err := io.ReadAll(post.Body)
@@ -236,6 +238,7 @@ func TestStart(t *testing.T) {
 			server.Shutdown(context.Background()) //nolint:errcheck
 		}
 		setUpServers(t)
+		defer closeServers()
 
 		<-time.After(10 * time.Second)
 	})
@@ -274,5 +277,11 @@ func setUpServers(t *testing.T) {
 				t.Log(err.Error())
 			}
 		}()
+	}
+}
+
+func closeServers() {
+	for _, server := range servers {
+		server.Shutdown(context.Background()) //nolint:errcheck
 	}
 }

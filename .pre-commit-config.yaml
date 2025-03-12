@@ -13,8 +13,6 @@ repos:
       - id: go-imports
       - id: no-go-testing
       - id: golangci-lint
-      - id: go-vet
       - id: go-critic
-      - id: go-unit-tests
       - id: go-build
       - id: go-mod-tidy

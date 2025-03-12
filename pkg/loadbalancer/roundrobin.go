@@ -4,6 +4,8 @@ import (
 	"errors"
 	"sync/atomic"
 
+	"github.com/onkarbanerjee/roundbalancer/pkg/measurements"
+
 	"github.com/onkarbanerjee/roundbalancer/pkg/backends"
 )
 
@@ -20,6 +22,7 @@ func NewRoundRobin(backendGroup backends.GroupOfBackends) *RoundRobin {
 }
 
 func (r *RoundRobin) Next() (*backends.Backend, error) {
+	const operation = "roundRobin.Next"
 	allBackends := r.backendGroup.GetAllBackends()
 	total := int32(len(allBackends))
 	next := (atomic.LoadInt32(&r.current) + 1) % total
@@ -34,9 +37,14 @@ func (r *RoundRobin) Next() (*backends.Backend, error) {
 		}
 	}
 	if !found {
-		return nil, errors.New("no healthy backends")
+		err := errors.New("no healthy backends")
+		measurements.UpdateCount(operation, err)
+
+		return nil, err
 	}
 	nextBackend := allBackends[next]
 	atomic.StoreInt32(&r.current, next)
+	measurements.UpdateCount(operation, nil)
+
 	return nextBackend, nil
 }
